@@ -1,3 +1,4 @@
+// global variables
 let currOperand, prevOperand, operation;
 
 function reset() {
@@ -6,12 +7,19 @@ function reset() {
   operation = undefined;
 }
 
-function chooseOperation(operation) {
+function chooseOperation(currOp) {
   if (currOperand === '') return;
   if (prevOperand !== '') {
     compute();
   }
-  operation = operation;
+
+  // weird bug: previously
+  // operation = operation
+  // where the rhs is the function param and the lhs is the global var
+  operation = currOp;
+  // visual.log(operation);
+  // visualLog.innerText += `${operation}\n`;
+  // visualLog.innerText += `${currOp}\n`;
   prevOperand = currOperand;
   currOperand = '';
 }
@@ -37,64 +45,22 @@ function compute() {
     default:
       return;
   }
-  currOperand = computation;
+  currOperand = `${computation}`;
   operation = undefined;
   prevOperand = '';
 }
 
-function getDisplayNumber(number) {
-  const stringNumber = number.toString();
-  const intDigits = parseFloat(stringNumber.split('.')[0]);
-  const deciDigits = stringNumber.split('.')[1];
-  let integerDisplay;
-  if (isNaN(intDigits)) {
-    integerDisplay = '';
-  } else {
-    integerDisplay = intDigits.toLocaleString('en', { maximumFractionDigits: 0 });
-  }
-  if (deciDigits != null) {
-    return `${integerDisplay}.${deciDigits}`;
-  } else {
-    return integerDisplay;
-  }
-}
-
-function updateCurrOperandEl() {
-  const stringNumber = currOperand.toString();
-  const intDigits = parseFloat(stringNumber.split('.')[0]);
-  const deciDigits = stringNumber.split('.')[1];
-  let integerDisplay;
-  if (isNaN(intDigits)) {
-    integerDisplay = '';
-  } else {
-    integerDisplay = intDigits.toLocaleString('en', { maximumFractionDigits: 0 });
-  }
-  if (deciDigits) {
-    integerDisplay = `${integerDisplay}.${deciDigits}`;
-  }
-
-  currOperandEl.innerText = integerDisplay;
-}
-
-function updatePrevOperandEl() {
-  const stringNumber = prevOperand.toString();
-  const intDigits = parseFloat(stringNumber.split('.')[0]);
-  const deciDigits = stringNumber.split('.')[1];
-  let integerDisplay;
-  if (isNaN(intDigits)) {
-    integerDisplay = '';
-  } else {
-    integerDisplay = intDigits.toLocaleString('en', { maximumFractionDigits: 0 });
-  }
-  if (deciDigits) {
-    integerDisplay = `${integerDisplay}.${deciDigits}`;
-  }
-
+function wrapper() {
   if (operation) {
-    prevOperandEl.innerText = `${integerDisplay} ${operation}`;
+    prevOperandEl.innerText = `${prevOperand} ${operation}`;
   } else {
     prevOperandEl.innerText = '';
   }
+}
+
+function updateValues() {
+  currOperandEl.innerText = currOperand;
+  wrapper();
 }
 
 const numBtns = document.querySelectorAll('[data-number]');
@@ -105,41 +71,35 @@ const allClearBtn = document.querySelector('[data-all-clear]');
 const prevOperandEl = document.querySelector('[data-previous-operand]');
 const currOperandEl = document.querySelector('[data-current-operand]');
 
-// from start
 reset();
 
 numBtns.forEach(button => {
-  button.addEventListener('click', () => {
+button.addEventListener('click', () => {
     const number = button.innerText;
     if (number === '.' && currOperand.includes('.')) return;
     currOperand = currOperand.toString() + number.toString();
-    updateCurrOperandEl();
-    updatePrevOperandEl();
+    updateValues();
   });
 });
 
 operationBtns.forEach(button => {
   button.addEventListener('click', () => {
     chooseOperation(button.innerText);
-    updateCurrOperandEl();
-    updatePrevOperandEl();
+    updateValues();
   });
 });
 
 equalsBtn.addEventListener('click', button => {
   compute();
-  updateCurrOperandEl();
-  updatePrevOperandEl();
+  updateValues();
 });
 
 allClearBtn.addEventListener('click', button => {
   reset();
-  updateCurrOperandEl();
-  updatePrevOperandEl();
+  updateValues();
 });
 
 deleteBtn.addEventListener('click', button => {
   currOperand = currOperand.toString().slice(0, -1);
-  updateCurrOperandEl();
-  updatePrevOperandEl();
+  updateValues();
 });
